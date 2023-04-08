@@ -47,9 +47,11 @@ def dumper(seq):
             print(s_date + info, vals, "--")
 
 def shown(item):
+    """ Shown one item in 'eredes' """
+    valid_ops = ("OP", "CLIENTE")
     s_item = str(item)
     dttm, op_str, act_str, s_unit, rest1, rest2, rest3 = item
-    assert op_str == "OP", s_item
+    assert op_str.upper() in valid_ops, f"op_str='{op_str}', s_item={s_item},\n\nNot in: {valid_ops}"
     assert act_str == "Activa", s_item
     s_date = dttm.strftime("%Y-%m-%d")
     vals = [float(rest1), float(rest2), float(rest3)]
