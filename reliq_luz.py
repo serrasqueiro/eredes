@@ -12,6 +12,8 @@ import sys
 import datetime
 import openpyxl
 
+OUT_TEXT = "out.txt"
+
 def main():
     main_script(sys.argv[1:])
 
@@ -26,10 +28,30 @@ def main_script(args):
     # Sorted as e.g.
     #	[('2023-02-14', [175.0, 107.0, 248.0]), ('2023-02-15', [178.0, 109.0, 253.0])]
     new = sorted(third, key=lambda x: x[0], reverse=False)
-    dumper(new)
+    all_seq = dumper(new)
+    store_text(OUT_TEXT, all_seq)
     return first, third
 
+def store_text(fname:str, seq:list):
+    """ Output to 'fname' the sequence, in tsv """
+
+    def myline(this):
+        watts = this[1]
+        item = [this[0]] + [f"{aval:.0f}" for aval in watts]
+        #print("### item:", item)
+        astr = '\t'.join(item)
+        return astr
+
+    res = "# data\tVazio\tPonta\tCheias\n"
+    res += "\n".join([myline(ala) for ala in seq]) + "\n"
+    if not fname:
+        return False
+    with open(fname, "w", encoding="ascii") as fdout:
+        fdout.write(res)
+    return True
+
 def dumper(seq):
+    all_seq = []
     last = []
     for item in seq:
         there = shown(item)
@@ -45,6 +67,8 @@ def dumper(seq):
             print(s_date + info, vals, sum(comm))
         else:
             print(s_date + info, vals, "--")
+        all_seq.append((s_date, vals))
+    return all_seq
 
 def shown(item):
     """ Shown one item in 'eredes' """
