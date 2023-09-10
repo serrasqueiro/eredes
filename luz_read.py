@@ -91,6 +91,8 @@ def smart_calc(infos, prev_day, dare:list):
         s_date = new.strftime("%Y-%m-%d")
         #print(":::___", i_date, s_date, a_sum, dim)
         s_date += " ---"
+        if day == abs_day:
+            s_date = i_date.replace(' ', '*')
         dare.append((new, day, (s_date, dim)))
     return True
 
