@@ -12,7 +12,7 @@ import sys
 import datetime
 import openpyxl
 
-OUT_TEXT = "out.txt"
+OUT_TEXT = "out.tsv"	# Tab-separated output
 
 def main():
     main_script(sys.argv[1:])
@@ -20,6 +20,19 @@ def main():
 def main_script(args):
     param = args if args else ["Leituras_20230216.xlsx"]
     fname = param[0]
+    if len(param) > 2:
+        print("Too many parameters!")
+        return None
+    del param[0]
+    if param:
+        outname = param[0]
+        print("# Output goes to:", outname)
+    else:
+        outname = OUT_TEXT
+    file_use(fname, outname)
+    return 0
+
+def file_use(fname, outname):
     datas = reader(fname)
     first, sec = datas
     assert first, "Data!"
@@ -29,7 +42,7 @@ def main_script(args):
     #	[('2023-02-14', [175.0, 107.0, 248.0]), ('2023-02-15', [178.0, 109.0, 253.0])]
     new = sorted(third, key=lambda x: x[0], reverse=False)
     all_seq = dumper(new)
-    store_text(OUT_TEXT, all_seq)
+    store_text(outname, all_seq)
     return first, third
 
 def store_text(fname:str, seq:list):
