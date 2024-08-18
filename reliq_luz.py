@@ -1,18 +1,13 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 #
-# (c)2023  Henrique Moreira
-
-""" reliq_luz.py -- leitura a partir de e-redes
-Copied from my private branch, https://github.com/serrasqueiro/leituras
-at branch `new/eredes_AUTO`
-"""
+# (c)2023, 2024  Henrique Moreira
+#
+# reader of e-redes Leituras_...xlsx
 
 import sys
 import datetime
 import openpyxl
-
-OUT_TEXT = "out.txt"
 
 def main():
     main_script(sys.argv[1:])
@@ -28,33 +23,13 @@ def main_script(args):
     # Sorted as e.g.
     #	[('2023-02-14', [175.0, 107.0, 248.0]), ('2023-02-15', [178.0, 109.0, 253.0])]
     new = sorted(third, key=lambda x: x[0], reverse=False)
-    all_seq = dumper(new)
-    store_text(OUT_TEXT, all_seq)
+    dumper(new)
     return first, third
 
-def store_text(fname:str, seq:list):
-    """ Output to 'fname' the sequence, in tsv """
-
-    def myline(this):
-        watts = this[1]
-        item = [this[0]] + [f"{aval:.0f}" for aval in watts]
-        #print("### item:", item)
-        astr = '\t'.join(item)
-        return astr
-
-    res = "# data\tVazio\tPonta\tCheias\n"
-    res += "\n".join([myline(ala) for ala in seq]) + "\n"
-    if not fname:
-        return False
-    with open(fname, "w", encoding="ascii") as fdout:
-        fdout.write(res)
-    return True
-
 def dumper(seq):
-    all_seq = []
     last = []
-    for item in seq:
-        there = shown(item)
+    for idx, item in enumerate(seq, 1):
+        there = shown(item, idx)
         s_date, vals = there[0], there[-1]
         if last:
             comm = [vals[0] - last[0], vals[1] - last[1], vals[2] - last[2]]
@@ -67,16 +42,17 @@ def dumper(seq):
             print(s_date + info, vals, sum(comm))
         else:
             print(s_date + info, vals, "--")
-        all_seq.append((s_date, vals))
-    return all_seq
 
-def shown(item):
-    """ Shown one item in 'eredes' """
-    valid_ops = ("OP", "CLIENTE")
+def shown(tups, idx):
+    item = tups
+    if item[3] == "VALIDA":
+        del item[3]
+    valid_ops = ("OP", "Cliente")
     s_item = str(item)
+    #print("DEBUG:", idx, "item:", item, f"(len={len(item)})")
     dttm, op_str, act_str, s_unit, rest1, rest2, rest3 = item
-    assert op_str.upper() in valid_ops, f"op_str='{op_str}', s_item={s_item},\n\nNot in: {valid_ops}"
-    assert act_str == "Activa", s_item
+    assert op_str in valid_ops, f"op_str='{op_str}', s_item={s_item},\n\nNot in: {valid_ops}"
+    assert act_str in ("Activa", "OP"), f"act_str unexpected: {item}"
     s_date = dttm.strftime("%Y-%m-%d")
     vals = [float(rest1), float(rest2), float(rest3)]
     #print(s_date, vals)
@@ -117,8 +93,10 @@ def formatter(cell, col):
     except ValueError:
         dttm = ""
     sval = "" if cell.data_type == 'n' else cell.value
+    if sval.startswith("V") and sval.endswith("lida"):
+        sval = "VALIDA"
     if not dttm:
-        if "Operador" in sval:
+        if "Operador" in sval or (col == 2 and sval == "Real"):
             sval = "OP"
         if "Energia" in sval:
             sval = "kWh"
