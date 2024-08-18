@@ -70,13 +70,15 @@ def dumper(seq):
         all_seq.append((s_date, vals))
     return all_seq
 
-def shown(item):
+def shown(tups):
     """ Shown one item in 'eredes' """
-    valid_ops = ("OP", "CLIENTE")
+    item = tups
+    if item[3] == "VALIDA":
+        del item[3]
     s_item = str(item)
     dttm, op_str, act_str, s_unit, rest1, rest2, rest3 = item
-    assert op_str.upper() in valid_ops, f"op_str='{op_str}', s_item={s_item},\n\nNot in: {valid_ops}"
-    assert act_str == "Activa", s_item
+    assert op_str in ("Real",), f"op_str='{op_str}', s_item={s_item}"
+    assert act_str in ("Activa", "OP"), f"act_str unexpected: {item}"
     s_date = dttm.strftime("%Y-%m-%d")
     vals = [float(rest1), float(rest2), float(rest3)]
     #print(s_date, vals)
@@ -117,6 +119,8 @@ def formatter(cell, col):
     except ValueError:
         dttm = ""
     sval = "" if cell.data_type == 'n' else cell.value
+    if sval.startswith("V") and sval.endswith("lida"):
+        sval = "VALIDA"
     if not dttm:
         if "Operador" in sval:
             sval = "OP"
