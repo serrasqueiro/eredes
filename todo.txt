@@ -1,0 +1,3 @@
+hints:
+- ./reliq_luz.py /home_02/henrique/anaceo/giro_repo_com/external/snippets/leituras/raw_data/Leituras_20230320.xlsx
+
